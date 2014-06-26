@@ -1,0 +1,26 @@
+
+##########################################################################
+# Under Win9x, COMSPEC is defined, but ComSpec isn't,
+# and under WinNT, ComSpec is defined, but COMSPEC isn't!
+#
+ifdef ComSpec
+    DOS_CMD=$(ComSpec) /C
+endif
+ifdef COMSPEC
+    DOS_CMD=$(COMSPEC) /C
+endif
+ifneq ($(DOS_CMD),)
+    O_SYS = windows
+else
+    # We're running under Unix (or Linux)
+    O_SYS = linux
+endif
+##########################################################################
+nullstring=
+ifeq "$(O_SYS)" "windows"
+	RM=del
+	PS= \$(nullstring)
+else 
+	RM=rm -f
+	PS=/$(nullstring)
+endif 
