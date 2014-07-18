@@ -29,6 +29,7 @@
 #define TIMER1_LIMIT   0x102
 
 #define TIMER_CONTROL_IE (1 << 0)
+#define TIMER_CONTROL_NH (1 << 1)
 #define TIMER_CONTROL_IP (1 << 3)
 
 //Enables interrupt bit for SETI
@@ -90,7 +91,7 @@ int main(void)
 	//setup timer
 #if TIMER_NUMBER == 0
 	__builtin_arc_sr(0x1FFFFF, TIMER0_LIMIT);//set limit 
-	__builtin_arc_sr(TIMER_CONTROL_IE, TIMER0_CONTROL);//enable interrupt
+	__builtin_arc_sr(TIMER_CONTROL_IE|TIMER_CONTROL_NH, TIMER0_CONTROL);//enable interrupt
 	__builtin_arc_sr(0x00, TIMER0_COUNT);//reset counter
 	//disable interrupt from second timer (if exists)
 	if(__builtin_arc_lr(TIMER_BUILD) & TIMER_BUILD_T1) __builtin_arc_sr(__builtin_arc_lr(TIMER1_CONTROL) & ~(TIMER_CONTROL_IE | TIMER_CONTROL_IP), TIMER1_CONTROL);

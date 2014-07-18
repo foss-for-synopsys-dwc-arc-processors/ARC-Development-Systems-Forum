@@ -1,7 +1,7 @@
 #include "cachectrl.h"
 
 //invalidate I-cache
-void _invalidate_icache(void)
+void _invalidate_dcache(void)
 {
 	unsigned int bcr = __builtin_arc_lr(I_CACHE_BUILD);
 	if((bcr & 0xFF) >= 0x04)//ARC v2 caches
@@ -15,7 +15,7 @@ void _invalidate_icache(void)
 
 
 //invalidate D-cache
-void _invalidate_dcache(void)
+void _invalidate_icache(void)
 {
 
 	unsigned int bcr = __builtin_arc_lr(D_CACHE_BUILD);

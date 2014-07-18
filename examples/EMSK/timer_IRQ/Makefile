@@ -2,6 +2,7 @@ CC=arc-elf32-gcc
 AS=arc-elf32-as
 LD=$(CC)
 ED=arc-elf32-objdump
+OC=arc-elf32-objcopy
 
 include Makefile.os_specific
 
@@ -14,6 +15,7 @@ COMP_SRCS=test.c setvect.c cachectrl.c leds.c
 COMP_SRCS_S=crt0.s
 
 TARGET=irq_test.elf
+IMG = irq_test.img
 
 HWFLAGS=-mav2em -mlittle-endian -mmpy-option=2
 HW_FLAGS_MWDT=-av2em
@@ -23,7 +25,12 @@ CFLAGS=$(HWFLAGS) $(OPTFLAGS) -I.$(PS)common$(PS)inc -I.$(PS)gpio -I.$(PS)gpio$(
 AFLAGS=$(HWFLAGS) $(OPTFLAGS)
 
 LDFLAGS=$(HWFLAGS) -nostartfiles -Wl,-Map,$(TARGET).map.txt 
-LINKER_CMD_FILE=link_arcem4.ln
+
+ifeq "$(EM)" "6"
+	LINKER_CMD_FILE=link_arcem6_ram.ln
+else
+	LINKER_CMD_FILE=link_arcem4.ln
+endif
 
 OBJECTS=$(COMP_SRCS:.c=.o)
 OBJECTS_S=$(COMP_SRCS_S:.s=.o)
@@ -34,32 +41,38 @@ EDFLAGS=-d -S
 SIMULATION_SPECIFIC=
 
 
-all: $(COMP_SRCS) $(COMP_SRCS_S) $(TARGET) 
+# all: $(COMP_SRCS) $(COMP_SRCS_S) $(TARGET) $(IMG)
 
+all: $(TARGET)  $(IMG)
 
 $(TARGET): $(COMP_SRCS) $(COMP_SRCS_S) $(OBJECTS) $(OBJECTS_S)
-	$(V)echo "Link $@"
+	$(V)@echo "Link $@"
 	$(V)$(LD) -T $(LINKER_CMD_FILE) $(LDFLAGS) -o $@ $(OBJECTS) $(OBJECTS_S) 
 	$(V)$(ED) $(EDFLAGS) $@ > $(TARGET).elfdump.txt
 
+$(IMG): $(TARGET)
+ifeq "$(EM)" "6"
+	$(V)$(OC) -O binary $< $@
+endif
+
 %.o: %.s
-	$(V)echo "Assembling $<"
+	$(V)@echo "Assembling $<"
 	$(V)$(CC) -c $(AFLAGS) $< -o $@
 
 setvect.o: setvect.c
-	$(V)echo "Compiling $<"
+	$(V)@echo "Compiling $<"
 	$(V)$(CC) -c $(CFLAGS) -mno-volatile-cache $< -o $@
 
 
 %.o: %.c
-	$(V)echo "Compiling $<"
+	$(V)@echo "Compiling $<"
 	$(V)$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
 	-$(RM) $(OBJECTS) $(OBJECTS_S) $(TARGET).map.txt $(TARGET).elfdump.txt
 
 cleanall: clean
-	-$(RM) $(TARGET) 
+	-$(RM) $(TARGET) $(TARGET).* $(IMG)
 
 run:
 	$(MDB) -cl -run $(HW_FLAGS_MWDT) $(SIMULATION_SPECIFIC) $(TARGET)
