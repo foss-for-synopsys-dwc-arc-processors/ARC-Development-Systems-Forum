@@ -17,7 +17,7 @@ COMP_SRCS_S=crt0.s
 TARGET=irq_test.elf
 IMG = irq_test.img
 
-HWFLAGS=-mav2em -mlittle-endian -mmpy-option=2
+HWFLAGS=-mcpu=em4 -mlittle-endian -mmpy-option=2
 HW_FLAGS_MWDT=-av2em
 
 OPTFLAGS=-g -Os
